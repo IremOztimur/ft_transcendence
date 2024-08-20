@@ -5,3 +5,7 @@
 body {
 	overflow: hidden;
 }
+
+#pong {
+	background-color: #111;
+}
