@@ -4,6 +4,7 @@ class Paddle {
 		this.velocity = velocity;
 		this.width = width;
 		this.height = height;
+		this.score = 0;
 	}
 
 	update(keysPressed) {
