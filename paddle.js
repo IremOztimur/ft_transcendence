@@ -6,7 +6,14 @@ class Paddle {
 		this.height = height;
 	}
 
-	update() {}
+	update(keysPressed) {
+		if (keysPressed[UP_ARROW]){
+			this.pos.y -= this.velocity.y;
+		}
+		if (keysPressed[DOWN_ARROW]){
+			this.pos.y += this.velocity.y;
+		}
+	}
 
 	draw(context) {
 		context.fillStyle = "#33ff00";

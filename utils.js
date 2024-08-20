@@ -12,3 +12,11 @@ function ballCollisionWithTheEdges(game) {
 		game.ball.velocity.x *= -1;
 	}
 }
+
+function paddleCollisionWithTheEdges(game) {
+	if (game.paddle1.pos.y <= 0)
+		game.paddle1.pos.y = 0;
+
+	if (game.paddle1.pos.y + game.paddle1.height >= game.height)
+			game.paddle1.pos.y = game.height - game.paddle1.height;
+}

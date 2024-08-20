@@ -8,11 +8,13 @@ class Game {
 		this.paddle2 = new Paddle(vec2(width-20, 200), vec2(5, 5), 20, 160);
 	}
 
-	update() {
+
+	update(keysPressed) {
 		this.ball.update();
-		this.paddle1.update();
-		this.paddle2.update();
+		this.paddle1.update(keysPressed);
+		// this.paddle2.update(keysPressed);
 		ballCollisionWithTheEdges(this);
+		paddleCollisionWithTheEdges(this);
 	}
 
 	render() {
@@ -22,9 +24,9 @@ class Game {
 		this.paddle2.draw(this.context);
 	}
 
-	loop() {
-		this.update();
+	loop(keysPressed) {
+		this.update(keysPressed);
 		this.render();
-		requestAnimationFrame(() => this.loop());
+		requestAnimationFrame(() => this.loop(keysPressed));
 	}
 }
