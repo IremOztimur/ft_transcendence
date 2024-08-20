@@ -19,4 +19,19 @@ class Paddle {
 		context.fillStyle = "#33ff00";
 		context.fillRect(this.pos.x, this.pos.y, this.width, this.height);
 	}
+
+	getHalfWidth(){
+		return (this.width / 2);
+	}
+
+	getHalfHeight(){
+		return (this.height / 2);
+	}
+
+	getCenter(){
+		return vec2(
+			this.pos.x + this.getHalfWidth(),
+			this.pos.y + this.getHalfHeight()
+		);
+	}
 }
