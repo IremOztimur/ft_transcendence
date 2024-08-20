@@ -5,7 +5,7 @@ class Game {
 		this.height = height;
 		this.ball = new Ball(vec2(200, 200), vec2(10, 10), 20);
 		this.paddle1 = new Paddle(vec2(0, 50), vec2(10, 10), 20, 160);
-		this.paddle2 = new Paddle(vec2(width-20, 200), vec2(5, 5), 20, 160);
+		this.paddle2 = new Paddle(vec2(width-20, 200), vec2(10, 10), 20, 160);
 	}
 
 
@@ -15,6 +15,7 @@ class Game {
 		ballCollisionWithTheEdges(this);
 		paddleCollisionWithTheEdges(this);
 		ballCollisionWithTheBall(this);
+		AIPlayer(this);
 	}
 
 	render() {
