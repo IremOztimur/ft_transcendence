@@ -25,6 +25,7 @@ class Game {
 		this.ball.draw(this.context);
 		this.paddle1.draw(this.context);
 		this.paddle2.draw(this.context);
+		drawGameFrame(this);
 	}
 
 	loop(keysPressed) {
