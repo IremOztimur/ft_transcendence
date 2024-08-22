@@ -15,6 +15,12 @@ function paddleCollisionWithTheEdges(game) {
 
 	if (game.paddle1.pos.y + game.paddle1.height >= game.height)
 			game.paddle1.pos.y = game.height - game.paddle1.height;
+
+	if (game.paddle2.pos.y <= 0)
+		game.paddle2.pos.y = 0;
+
+	if (game.paddle2.pos.y + game.paddle2.height >= game.height)
+			game.paddle2.pos.y = game.height - game.paddle2.height;
 }
 
 
@@ -75,7 +81,11 @@ function gameScore(game) {
 }
 
 function resetGame(game) {
-    let winner = game.paddle1.score === 3 ? "Player" : "AI";
+	let winner;
+    if (game.mode == 'ai')
+        winner = game.paddle1.score === 3 ? "Player" : "AI";
+    else if (game.mode == 'multiplayer')
+		winner = game.paddle1.score === 3 ? "Player-1" : "Player-2";
     alert(`${winner} wins!`);
 
     game.paddle1.score = 0;

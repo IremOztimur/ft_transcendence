@@ -7,11 +7,17 @@ class Paddle {
 		this.score = 0;
 	}
 
-	update(keysPressed) {
-		if (keysPressed[UP_ARROW]){
+	update(keysPressed, player) {
+		if (keysPressed[UP_ARROW] && player==1){
 			this.pos.y -= this.velocity.y;
 		}
-		if (keysPressed[DOWN_ARROW]){
+		if (keysPressed[DOWN_ARROW] &&  player==1){
+			this.pos.y += this.velocity.y;
+		}
+		if (keysPressed[W] &&  player==2){
+			this.pos.y -= this.velocity.y;
+		}
+		if (keysPressed[S] &&  player==2){
 			this.pos.y += this.velocity.y;
 		}
 	}

@@ -12,11 +12,11 @@ class Game {
 
 	update(keysPressed) {
 		this.ball.update();
-		this.paddle1.update(keysPressed);
+		this.paddle1.update(keysPressed, 1);
 		if (this.mode === "ai") {
 			AIPlayer(this);
 		} else if (this.mode === "multiplayer") {
-			this.paddle2.update(keysPressed);
+			this.paddle2.update(keysPressed, 2);
 		}
 		ballCollisionWithTheEdges(this);
 		paddleCollisionWithTheEdges(this);
