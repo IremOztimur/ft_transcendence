@@ -91,7 +91,7 @@ function resetGame(game) {
 }
 
 function drawGameFrame(game) {
-	game.context.strokeStyle = '#ffff00';
+	game.context.strokeStyle = '#33ff00';
 
 	game.context.beginPath();
 	game.context.lineWidth = 15;
@@ -103,18 +103,6 @@ function drawGameFrame(game) {
 	game.context.beginPath();
 	game.context.lineWidth = 15;
 	game.context.moveTo(0,game.height)
-	game.context.lineTo(game.width, game.height);
-	game.context.stroke();
-
-	game.context.beginPath();
-	game.context.lineWidth = 15;
-	game.context.moveTo(0, 0)
-	game.context.lineTo(0, game.height);
-	game.context.stroke();
-
-	game.context.beginPath();
-	game.context.lineWidth = 15;
-	game.context.moveTo(game.width, 0)
 	game.context.lineTo(game.width, game.height);
 	game.context.stroke();
 
