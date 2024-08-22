@@ -19,19 +19,22 @@ class Game {
 		gameScore(this);
 	}
 
-	render() {
+	render(isPaused) {
 		this.context.fillStyle = "rgba(0, 0, 0, 0.4)";
 		this.context.fillRect(0, 0, this.width, this.height);
 		this.ball.draw(this.context);
 		this.paddle1.draw(this.context);
 		this.paddle2.draw(this.context);
 		drawGameFrame(this);
+
+		if (isPaused)
+			pauseTable(this);
 	}
 
-	loop(keysPressed) {
+	loop(keysPressed, isPaused) {
+		if (!isPaused)
+			this.update(keysPressed);
 
-		this.update(keysPressed);
-		this.render();
-		requestAnimationFrame(() => this.loop(keysPressed));
+		this.render(isPaused);
 	}
 }

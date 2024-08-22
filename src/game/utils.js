@@ -75,20 +75,16 @@ function gameScore(game) {
 }
 
 function resetGame(game) {
-    // Announce the winner
     let winner = game.paddle1.score === 3 ? "Player" : "AI";
     alert(`${winner} wins!`);
 
-    // Reset scores
     game.paddle1.score = 0;
     game.paddle2.score = 0;
     document.getElementById("PlayerScore").innerHTML = game.paddle1.score;
     document.getElementById("AIScore").innerHTML = game.paddle2.score;
 
-    // Reset ball position and velocity
     respawnBall(game);
 
-    // Optionally reset paddle positions if needed
     game.paddle1.pos = vec2(0, game.height / 2 - game.paddle1.height / 2);
     game.paddle2.pos = vec2(game.width - game.paddle2.width, game.height / 2 - game.paddle2.height / 2);
 
@@ -133,3 +129,12 @@ function drawGameFrame(game) {
 	game.context.stroke();
 }
 
+function pauseTable(game){
+	game.context.fillStyle = "rgba(0, 0, 0, 0.5)";
+	game.context.fillRect(0, 0, game.width, game.height);
+
+	game.context.fillStyle = "#FFFFFF";
+	game.context.font = "48px Arial";
+	game.context.textAlign = "center";
+	game.context.fillText("Game Paused", game.width / 2, game.height / 2);
+}
