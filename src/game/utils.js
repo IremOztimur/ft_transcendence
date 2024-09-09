@@ -51,7 +51,7 @@ function respawnBall(game) {
 
 		do {
 			angle = Math.random() * 2 * Math.PI;
-		} while (Math.abs(Math.sin(angle)) < 0.1 || Math.abs(Math.cos(angle)) < 0.1);
+		} while (Math.abs(Math.sin(angle)) < 0.3 || Math.abs(Math.cos(angle)) < 0.3);
 
 		game.ball.velocity.x = Math.cos(angle) * speed;
 		game.ball.velocity.y = Math.sin(angle) * speed;
