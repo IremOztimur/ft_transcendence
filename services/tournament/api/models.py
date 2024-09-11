@@ -1,6 +1,35 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
-from .enums import Round, State, Status, StatusChoices
+from .enums import State, Status, StatusChoices
+
+from django.contrib.auth.models import BaseUserManager
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email=None, password=None, **extra_fields):
+        """
+        Creates and saves a User with the given email and password.
+        """
+        if email:
+            email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        """
+        Creates and saves a superuser with the given email and password.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
+
 
 class User(AbstractBaseUser):
 	STATUS_CHOICES = [
@@ -19,7 +48,9 @@ class User(AbstractBaseUser):
 	championships = models.IntegerField(default=0, blank=False, null=False)
 
 	USERNAME_FIELD = 'email'
-	REQUIRED_FIELDS = ['email']
+	REQUIRED_FIELDS = ['alias_name']
+
+	objects = CustomUserManager()
 
 	def __str__(self):
 		return f'Player: [ alias: {self.alias_name}, username: {self.username} ]'
@@ -37,10 +68,9 @@ class PlayerMatch(models.Model):
 
 
 class Match(models.Model):
-
     id = models.AutoField(primary_key=True)
     tournament = models.ForeignKey('Tournament', on_delete=models.CASCADE, null=True, blank=False)
-    round = models.CharField(max_length=2, choices=Round.choices(), null=False, blank=False)
+    round = models.IntegerField(default=1)
     state = models.CharField(max_length=3, choices=State.choices(), null=False, blank=False, default=State.UNPLAYED.value)
 
     def __str__(self):
@@ -56,11 +86,9 @@ class PlayerTournament(models.Model):
 		return f'{self.player_id} -> {self.creator}'
 
 class Tournament(models.Model):
-
-
 	id = models.AutoField(primary_key=True)
 	name = models.CharField(max_length=30, null=False, blank=False, unique=False)
-	round = models.CharField(max_length=2, choices=Round.choices(), null=False, blank=False)
+	round = models.IntegerField(default=1)
 	status = models.CharField(max_length=2,
 						choices=StatusChoices.choices(),
 						default=StatusChoices.PENDING.value,
