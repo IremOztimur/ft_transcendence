@@ -2,7 +2,6 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from django.urls import reverse
-from django.contrib.auth import get_user_model
 from .models import Tournament, User
 from .enums import StatusChoices
 
@@ -31,3 +30,11 @@ class TournamentViewTestCase(TestCase):
         response = self.client.get(reverse('tournament-view'))
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data['message'], "No Tournaments available")
+
+    def test_post_create_tournament(self):
+        response = self.client.post(reverse('tournament-view'),
+                                     data={'action': 'create',
+                                        'tournament_id': self.pending_tournament.id,
+                                        'alias_name': self.user.alias_name,
+                                        'tournament_name': 'Test Tournament'})
+        self.assertEqual(response.status_code, 201)
