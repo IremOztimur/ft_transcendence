@@ -3,15 +3,13 @@ from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from .models import Tournament
+from .models import Tournament, User
 from .enums import StatusChoices
-
-User = get_user_model()  # Use the custom User model
 
 class TournamentViewTestCase(TestCase):
     def setUp(self):
         # Create a user and generate a token for authentication
-        self.user = User.objects.create_user(email='testuser@example.com', password='password', username='testuser')
+        self.user = User.objects.create_user(email='testuser@example.com', password='password', username='testuser', alias_name='zort')
         self.client = APIClient()
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
