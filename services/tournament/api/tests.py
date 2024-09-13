@@ -34,7 +34,6 @@ class TournamentViewTestCase(TestCase):
     def test_post_create_tournament(self):
         response = self.client.post(reverse('tournament-view'),
                                      data={'action': 'create',
-                                        'tournament_id': self.pending_tournament.id,
                                         'alias_name': self.user.alias_name,
                                         'tournament_name': 'Test Tournament'})
         self.assertEqual(response.status_code, 201)

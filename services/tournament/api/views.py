@@ -26,8 +26,6 @@ class TournamentView(APIView):
 	def post(self, request):
 		action = request.data.get('action')
 		user_id = request.user.id
-		name = request.data.get('tournament_name')
-		alias = request.data.get('alias_name')
 
 		try:
 			player = User.objects.get(id=user_id)
@@ -35,18 +33,28 @@ class TournamentView(APIView):
 			return Response({"statusCode": 400, "message": "Player does not exist"})
 
 		if action == 'create':
-			if (name is None or alias is None or len(alias) == 0):
-				return Response({"statusCode": 400, "message": "Invalid Tournament Request"}, status=status.HTTP_400_BAD_REQUEST)
-			serializer = TournamentSerializer()
-			if serializer.is_player_in_tournament(player.id):
-				return Response({"statusCode": 400, "message": "Player already in a tournament"}, status=status.HTTP_400_BAD_REQUEST)
-			tournament = Tournament.objects.create(name=name)
-			PlayerTournament.objects.create(player=player, tournament=tournament, creator=True)
-			serializer = TournamentSerializer(tournament)
-			player.alias_name = alias
-			player.save()
-			return Response({"statusCode": 200,
-					 "message": "Tournament created successfully",
-					 "current_tournament": serializer.get_players(tournament)}, status=201)
+			return self.create_tournament(request, player)
 
-		return Response({"statusCode": 200, "message": "Tournament created successfully"}, status=status.HTTP_200_OK)
+	def create_tournament(self, request, player):
+		name = request.data.get('tournament_name')
+		alias = request.data.get('alias_name')
+
+		if not name or not alias:
+			return Response({"statusCode": 400, "message": "Invalid Tournament name or alias"})
+
+		serializer = TournamentSerializer()
+		if serializer.is_player_in_tournament(player.id):
+			return Response({"statusCode": 400, "message": "Player already in a tournament"}, status=status.HTTP_400_BAD_REQUEST)
+
+		tournament = Tournament.objects.create(name=name)
+		PlayerTournament.objects.create(player=player, tournament=tournament, creator=True)
+
+		player.alias_name = alias
+		player.save()
+
+		serializer = TournamentSerializer(tournament)
+		return Response({
+			"statusCode": 201,
+			"message": "Tournament created successfully",
+			"current_tournament": serializer.get_players(tournament)
+			}, status=201)
