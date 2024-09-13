@@ -35,12 +35,23 @@ class TournamentView(APIView):
 		if action == 'create':
 			return self.create_tournament(request, player)
 
+		tournament_id = request.data.get('tournament_id')
+		alias = request.data.get('alias_name')
+
+		try:
+			tournament = Tournament.objects.get(id=tournament_id)
+		except Tournament.DoesNotExist:
+			return Response({"statusCode": 400, "message": "Tournament does not exist"})
+
+		if action == 'join':
+			return self.join_tournament(tournament, player, alias)
+
 	def create_tournament(self, request, player):
 		name = request.data.get('tournament_name')
 		alias = request.data.get('alias_name')
 
 		if not name or not alias:
-			return Response({"statusCode": 400, "message": "Invalid Tournament name or alias"})
+			return Response({"statusCode": 400, "message": "Invalid Tournament name or alias"}, status=status.HTTP_400_BAD_REQUEST)
 
 		serializer = TournamentSerializer()
 		if serializer.is_player_in_tournament(player.id):
@@ -58,3 +69,18 @@ class TournamentView(APIView):
 			"message": "Tournament created successfully",
 			"current_tournament": serializer.get_players(tournament)
 			}, status=201)
+
+	def join_tournament(self, tournament, player, alias):
+		if alias is None or tournament.status != StatusChoices.PENDING.value:
+			return Response({"statusCode": 400, "message": "Tournament is full or alias missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+		serializer = TournamentSerializer()
+		if (serializer.is_player_in_tournament(player.id)):
+			return Response({"statusCode": 400, "message": "Player already in a tournament"}, status=status.HTTP_400_BAD_REQUEST)
+
+		player.alias_name = alias
+		player.save()
+
+		PlayerTournament.objects.create(player=player, tournament=tournament, creator=False)
+		return Response({"statusCode": 200, "message": "Player joined tournament"}, status=status.HTTP_200_OK)
+

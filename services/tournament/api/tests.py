@@ -16,6 +16,7 @@ class TournamentViewTestCase(TestCase):
         # Create sample tournaments
         self.pending_tournament = Tournament.objects.create(name="Pending Tournament", status=StatusChoices.PENDING.value)
         self.finished_tournament = Tournament.objects.create(name="Finished Tournament", status=StatusChoices.FINISHED.value)
+        self.progressing_tournament = Tournament.objects.create(name="Progressing Tournament", status=StatusChoices.PROGRESS.value)
 
     def test_get_pending_tournaments(self):
         response = self.client.get(reverse('tournament-view'))
@@ -31,9 +32,45 @@ class TournamentViewTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data['message'], "No Tournaments available")
 
-    def test_post_create_tournament(self):
+    def test_create_tournament(self):
         response = self.client.post(reverse('tournament-view'),
                                      data={'action': 'create',
                                         'alias_name': self.user.alias_name,
                                         'tournament_name': 'Test Tournament'})
         self.assertEqual(response.status_code, 201)
+
+    def test_join_tournament(self):
+        response = self.client.post(reverse('tournament-view'),
+                                    data={
+                                        'action': 'join',
+                                        'tournament_id': self.pending_tournament.id,
+                                        'alias_name': self.user.alias_name
+                                    },
+                                    format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], "Player joined tournament")
+
+    def test_join_tournament_without_alias(self):
+        response = self.client.post(reverse('tournament-view'),
+                                    data={
+                                        'action': 'join',
+                                        'tournament_id': self.pending_tournament.id
+                                    },
+                                    format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['message'], "Tournament is full or alias missing")
+
+    def test_join_progressing_tournament(self):
+        response = self.client.post(reverse('tournament-view'),
+                                    data={
+                                        'action': 'join',
+                                        'tournament_id': self.progressing_tournament.id,
+                                        'alias_name': self.user.alias_name
+                                    },
+                                    format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['message'], "Tournament is full or alias missing")
+
