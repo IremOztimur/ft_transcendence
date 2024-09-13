@@ -3,11 +3,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .enums import *
-from .models import Tournament, User, PlayerTournament
+from .models import Tournament, User, PlayerTournament, Match, PlayerMatch
 from .serializers import TournamentSerializer
-from django.contrib.auth import get_user_model
+from itertools import cycle
 
-User = get_user_model()
+def create_match(tournament, player1, player2):
+	new_match = Match.objects.create(tournament= tournament,
+								round = tournament.round)
+
+	PlayerMatch.objects.bulk_create([
+		PlayerMatch(match=new_match, player=player1),
+		PlayerMatch(match=new_match, player=player2)
+	])
 
 class TournamentView(APIView):
 	def get(self, request):
@@ -48,6 +55,9 @@ class TournamentView(APIView):
 
 		if (action == 'leave'):
 			return self.leave_tournament(tournament, player)
+
+		if (action == 'start'):
+			return self.start_tournament(tournament, player)
 
 	def create_tournament(self, request, player):
 		name = request.data.get('tournament_name')
@@ -100,3 +110,22 @@ class TournamentView(APIView):
 		player_tournament.delete()
 		return Response({"statusCode": 200, "message": f"{player.alias_name} left tournament"}, status=status.HTTP_200_OK)
 
+	def start_tournament(self, tournament, player):
+		if (tournament.status != StatusChoices.PENDING.value):
+			return Response({"statusCode": 400, "message": "Tournament cannot be started"}, status=status.HTTP_400_BAD_REQUEST)
+
+		serializer = TournamentSerializer()
+		if (serializer.get_player_number(tournament) != TOURNAMENT_SIZE):
+			return Response({"statusCode": 400, "message": "Tournament is not full"}, status=status.HTTP_400_BAD_REQUEST)
+
+		players = PlayerTournament.objects.filter(tournament=tournament)
+		players_cycle = cycle(players)
+
+		for i in range(0, TOURNAMENT_SIZE - 1, 2):
+			player1 = next(players_cycle).player
+			player2 = next(players_cycle).player
+			create_match(tournament, player1, player2)
+
+		tournament.status = StatusChoices.IN_PROGRESS.value
+		tournament.save()
+		return Response({"statusCode": 200, "message": "Tournament started successfully", "tournament_id": tournament.id}, status=status.HTTP_200_OK)

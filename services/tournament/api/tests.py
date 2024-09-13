@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from django.urls import reverse
 from .models import Tournament, User, PlayerTournament
-from .enums import StatusChoices
+from .enums import StatusChoices, TOURNAMENT_SIZE
 
 class TournamentViewTestCase(TestCase):
     def setUp(self):
@@ -17,6 +17,12 @@ class TournamentViewTestCase(TestCase):
         self.pending_tournament = Tournament.objects.create(name="Pending Tournament", status=StatusChoices.PENDING.value)
         self.finished_tournament = Tournament.objects.create(name="Finished Tournament", status=StatusChoices.FINISHED.value)
         self.progressing_tournament = Tournament.objects.create(name="Progressing Tournament", status=StatusChoices.IN_PROGRESS.value)
+
+        self.players = []
+        for i in range(TOURNAMENT_SIZE - 1):
+            player = User.objects.create_user(username=f'player{i}', password='testpass', email=f'player{i}@gmail.com', alias_name=f'player{i}zort')
+            PlayerTournament.objects.create(player=player, tournament=self.pending_tournament, creator=False)
+            self.players.append(player)
 
     def test_get_pending_tournaments(self):
         response = self.client.get(reverse('tournament-view'))
@@ -104,3 +110,12 @@ class TournamentViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['message'], f'{self.user.alias_name} left tournament')
         self.assertFalse(Tournament.objects.filter(id=self.pending_tournament.id).exists())
+
+    def test_start_tournament(self):
+        PlayerTournament.objects.create(player=self.user, tournament=self.pending_tournament, creator=True)
+        response = self.client.post(reverse('tournament-view'), data={
+            'action': 'start',
+            'tournament_id': self.pending_tournament.id
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'Tournament started successfully')

@@ -29,3 +29,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 		player_data = PlayerSerializer(instance=players, many=True)
 		return player_data.data
 
+	def get_player_number(self, tournament):
+		players = PlayerTournament.objects.filter(tournament=tournament)
+		return players.count()
+
