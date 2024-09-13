@@ -21,3 +21,5 @@ class StatusChoices(Enum):
 	@classmethod
 	def choices(cls):
 		return [(choice.value, choice.name) for choice in cls]
+
+TOURNAMENT_SIZE = 4
