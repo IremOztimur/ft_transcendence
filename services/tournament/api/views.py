@@ -15,12 +15,66 @@ def create_match(tournament, player1, player2):
 		PlayerMatch(match=new_match, player=player1),
 		PlayerMatch(match=new_match, player=player2)
 	])
+	return new_match
+
+def finish_tournament(tournament, current_round_matches):
+	winner_data = PlayerMatch.objects.filter(match__in=current_round_matches, won=True).first()
+	winner = winner_data.player
+	winner.championships += 1
+	winner.save()
+
+	tournament.status = StatusChoices.FINISHED.value
+	tournament.save()
+
+def prepare_next_round(tournament, matches):
+	winners = [pm.player for pm in PlayerMatch.objects.filter(match__in=matches, won=True)]
+
+	if len(winners) < 2:
+		return
+
+	tournament.round += 1
+	tournament.save()
+
+	while len(winners) >= 2:
+		player1 = winners.pop(0)
+		player2 = winners.pop(0)
+		create_match(tournament, player1, player2)
+
+def update_tournament(tournament_id):
+	tournament = Tournament.objects.select_related().get(id=tournament_id)
+
+	if tournament.status == StatusChoices.FINISHED.value:
+		return
+
+	current_round_matches = Match.objects.filter(tournament=tournament, round=tournament.round)
+
+	if all(match.state == State.PLAYED.value for match in current_round_matches):
+		winning_players = PlayerMatch.objects.filter(match__in=current_round_matches, won=True)
+		if len(winning_players) == 1:
+			finish_tournament(tournament, current_round_matches)
+		else:
+			prepare_next_round(tournament, current_round_matches)
 
 class TournamentView(APIView):
 	def get(self, request):
 		# Get Player Data
 		user_id = request.user.id
 		player = User.objects.get(id=user_id)
+
+		serializer = TournamentSerializer()
+		current_tournament = serializer.is_player_in_tournament(player.id)
+
+		if current_tournament:
+			serializer = TournamentSerializer(current_tournament, context={"player": player})
+			if current_tournament.status == StatusChoices.PENDING.value:
+				return Response({"statusCode": 200,
+					"current_tournament": serializer.data,
+					"players": serializer.get_players(current_tournament)},
+					status=status.HTTP_200_OK)
+			update_tournament(current_tournament.id) #TO-DO: Implement this function
+			return Response({"statusCode": 200,
+					"current_tournament": serializer.data})
+
 
 		# Handle case where no tournament is available
 		tournaments = Tournament.objects.filter(status=StatusChoices.PENDING.value)

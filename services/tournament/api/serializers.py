@@ -33,3 +33,6 @@ class TournamentSerializer(serializers.ModelSerializer):
 		players = PlayerTournament.objects.filter(tournament=tournament)
 		return players.count()
 
+	def get_creator(self, tournament):
+		player = self.context.get("player")
+		return PlayerTournament.objects.filter(tournament_id=tournament, player_id=player, creator=True).exists()
