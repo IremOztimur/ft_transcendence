@@ -17,7 +17,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 		tournament = Tournament.objects.filter(
 			Q(playertournament__player=player_id) &
 			(Q(status=StatusChoices.PENDING.value) |
-			Q(status=StatusChoices.PROGRESS.value))
+			Q(status=StatusChoices.IN_PROGRESS.value))
 		).first()
 		return tournament
 

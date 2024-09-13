@@ -15,7 +15,7 @@ class Status(Enum):
 
 class StatusChoices(Enum):
 	PENDING = 'PN'
-	PROGRESS = 'PG'
+	IN_PROGRESS = 'PG'
 	FINISHED = 'FN'
 
 	@classmethod

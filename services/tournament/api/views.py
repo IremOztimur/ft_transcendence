@@ -46,6 +46,9 @@ class TournamentView(APIView):
 		if action == 'join':
 			return self.join_tournament(tournament, player, alias)
 
+		if (action == 'leave'):
+			return self.leave_tournament(tournament, player)
+
 	def create_tournament(self, request, player):
 		name = request.data.get('tournament_name')
 		alias = request.data.get('alias_name')
@@ -83,4 +86,17 @@ class TournamentView(APIView):
 
 		PlayerTournament.objects.create(player=player, tournament=tournament, creator=False)
 		return Response({"statusCode": 200, "message": "Player joined tournament"}, status=status.HTTP_200_OK)
+
+	def leave_tournament(self, tournament, player):
+		if (tournament.status != StatusChoices.PENDING.value):
+			return Response({"statusCode": 400, "message": "Cannot leave a tournament in progress"}, status=status.HTTP_400_BAD_REQUEST)
+
+		player_tournament = PlayerTournament.objects.filter(player=player, tournament=tournament).first()
+		if not player_tournament:
+			return Response({"statusCode": 400, "message": "Player not in tournament"}, status=status.HTTP_400_BAD_REQUEST)
+		if player_tournament.creator:
+			tournament.delete()
+
+		player_tournament.delete()
+		return Response({"statusCode": 200, "message": f"{player.alias_name} left tournament"}, status=status.HTTP_200_OK)
 
