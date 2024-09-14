@@ -2,14 +2,15 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from django.urls import reverse
-from .models import Tournament, User, PlayerTournament, Match, PlayerMatch
+from .models import Tournament, Profil, PlayerTournament, Match, PlayerMatch, User
 from .enums import StatusChoices, TOURNAMENT_SIZE, State
 from .views import create_match, update_tournament
 
 class TournamentViewTestCase(TestCase):
     def setUp(self):
         # Create a user and generate a token for authentication
-        self.user = User.objects.create_user(email='testuser@example.com', password='password', username='testuser', alias_name='zort')
+        self.user = User.objects.create_user(email='testuser@example.com', password='password', username='testuser')
+        self.profil = Profil.objects.create(user=self.user, alias_name='zort')
         self.client = APIClient()
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
@@ -22,7 +23,8 @@ class TournamentViewTestCase(TestCase):
 
         self.players = []
         for i in range(TOURNAMENT_SIZE):
-            player = User.objects.create_user(username=f'player{i}', password='testpass', email=f'player{i}@gmail.com', alias_name=f'player{i}zort')
+            user = User.objects.create_user(username=f'player{i}', password='testpass', email=f'player{i}@gmail.com')
+            player = Profil.objects.create(user=user, alias_name=f'player{i}zort')
             PlayerTournament.objects.create(player=player, tournament=self.tournament, creator=False)
             self.players.append(player)
 
@@ -43,7 +45,7 @@ class TournamentViewTestCase(TestCase):
     def test_create_tournament(self):
         response = self.client.post(reverse('tournament-view'),
                                      data={'action': 'create',
-                                        'alias_name': self.user.alias_name,
+                                        'alias_name': self.profil.alias_name,
                                         'tournament_name': 'Test Tournament'})
         self.assertEqual(response.status_code, 201)
 
@@ -52,7 +54,7 @@ class TournamentViewTestCase(TestCase):
                                     data={
                                         'action': 'join',
                                         'tournament_id': self.pending_tournament.id,
-                                        'alias_name': self.user.alias_name
+                                        'alias_name': self.profil.alias_name
                                     },
                                     format='json')
 
@@ -75,7 +77,7 @@ class TournamentViewTestCase(TestCase):
                                     data={
                                         'action': 'join',
                                         'tournament_id': self.progressing_tournament.id,
-                                        'alias_name': self.user.alias_name
+                                        'alias_name': self.profil.alias_name
                                     },
                                     format='json')
 
@@ -83,7 +85,7 @@ class TournamentViewTestCase(TestCase):
         self.assertEqual(response.data['message'], "Tournament is full or alias missing")
 
     def test_leave_tournament(self):
-          PlayerTournament.objects.create(player=self.user, tournament=self.pending_tournament, creator=False)
+          PlayerTournament.objects.create(player=self.profil, tournament=self.pending_tournament, creator=False)
           response = self.client.post(reverse('tournament-view'),
                                       data={
                                           'action': 'leave',
@@ -91,10 +93,10 @@ class TournamentViewTestCase(TestCase):
                                           },
                                           format='json')
           self.assertEqual(response.status_code, 200)
-          self.assertEqual(response.data['message'], f"{self.user.alias_name} left tournament")
+          self.assertEqual(response.data['message'], f"{self.profil.alias_name} left tournament")
 
     def test_leave_tournament_in_progress(self):
-        PlayerTournament.objects.create(player=self.user, tournament=self.progressing_tournament, creator=False)
+        PlayerTournament.objects.create(player=self.profil, tournament=self.progressing_tournament, creator=False)
         response = self.client.post(reverse('tournament-view'), data={
             'action': 'leave',
             'tournament_id': self.progressing_tournament.id
@@ -104,13 +106,13 @@ class TournamentViewTestCase(TestCase):
         self.assertEqual(response.data['message'], 'Cannot leave a tournament in progress')
 
     def test_leave_tournament_as_creator(self):
-        PlayerTournament.objects.create(player=self.user, tournament=self.pending_tournament, creator=True)
+        PlayerTournament.objects.create(player=self.profil, tournament=self.pending_tournament, creator=True)
         response = self.client.post(reverse('tournament-view'), data={
             'action': 'leave',
             'tournament_id': self.pending_tournament.id
         })
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['message'], f'{self.user.alias_name} left tournament')
+        self.assertEqual(response.data['message'], f'{self.profil.alias_name} left tournament')
         self.assertFalse(Tournament.objects.filter(id=self.pending_tournament.id).exists())
 
     def test_start_tournament(self):

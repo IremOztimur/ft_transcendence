@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .enums import *
-from .models import Tournament, User, PlayerTournament, Match, PlayerMatch
+from .models import Tournament, Profil, PlayerTournament, Match, PlayerMatch
 from .serializers import TournamentSerializer
 from itertools import cycle
 
@@ -59,7 +59,7 @@ class TournamentView(APIView):
 	def get(self, request):
 		# Get Player Data
 		user_id = request.user.id
-		player = User.objects.get(id=user_id)
+		player = Profil.objects.get(user_id=user_id)
 
 		serializer = TournamentSerializer()
 		current_tournament = serializer.is_player_in_tournament(player.id)
@@ -71,7 +71,7 @@ class TournamentView(APIView):
 					"current_tournament": serializer.data,
 					"players": serializer.get_players(current_tournament)},
 					status=status.HTTP_200_OK)
-			update_tournament(current_tournament.id) #TO-DO: Implement this function
+			update_tournament(current_tournament.id)
 			return Response({"statusCode": 200,
 					"current_tournament": serializer.data})
 
@@ -89,8 +89,8 @@ class TournamentView(APIView):
 		user_id = request.user.id
 
 		try:
-			player = User.objects.get(id=user_id)
-		except User.DoesNotExist:
+			player = Profil.objects.get(user_id=user_id)
+		except Profil.DoesNotExist:
 			return Response({"statusCode": 400, "message": "Player does not exist"})
 
 		if action == 'create':
