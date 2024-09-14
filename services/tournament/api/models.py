@@ -1,7 +1,6 @@
 from django.db import models
 from .enums import State, Status, StatusChoices
 from django.contrib.auth.models import User
-from PIL import Image
 
 from django.contrib.auth.models import BaseUserManager
 
@@ -44,7 +43,7 @@ class Profil(models.Model):
         (Status.OFFLINE.value, 'OFFLINE'),
         (Status.INGAME.value, 'INGAME')
 	]
-    alias_name = models.CharField(max_length=100, unique=True, null=False, blank=False)
+    alias_name = models.CharField(max_length=100, null=True, blank=True)
     wins = models.IntegerField(default=0, blank=False, null=False)
     losses = models.IntegerField(default=0, blank=False, null=False)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default=Status.OFFLINE.value)
