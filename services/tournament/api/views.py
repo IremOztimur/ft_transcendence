@@ -169,7 +169,7 @@ class TournamentView(APIView):
 			return Response({"statusCode": 400, "message": "Tournament cannot be started"}, status=status.HTTP_400_BAD_REQUEST)
 
 		serializer = TournamentSerializer()
-		if (serializer.get_player_number(tournament) != TOURNAMENT_SIZE):
+		if (serializer.get_player_count(tournament) != TOURNAMENT_SIZE):
 			return Response({"statusCode": 400, "message": "Tournament is not full"}, status=status.HTTP_400_BAD_REQUEST)
 
 		players = PlayerTournament.objects.filter(tournament=tournament)
